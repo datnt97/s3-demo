@@ -1,0 +1,10 @@
+server:
+  http:
+    name: upload-svc
+    host: 0.0.0.0
+    port: ${SERVER_PORT}
+    middlewares:
+      prometheus: false
+      metrics: true
+      shedding: true
+      log: true

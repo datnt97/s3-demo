@@ -1,0 +1,14 @@
+{
+  "200": "Success",
+  "204": "Data is not found",
+  "400": "Bad Request",
+  "401": "No Authorization",
+  "500": "Something went wrong",
+  "bi_token_err" : "Failed to retrieve the token from BI",
+  "bi_conn_err" : "Failed to establish a connection to the BI service",
+  "bi_timeout_err" : "The request to the target service timed out. Please try again later",
+  "bi_invalid_resp_err" : "Received an invalid response from the BI service",
+  "bi_http_status_err" : "Received a non-success status code from the BI service: 500",
+  "erp_token_err" : "Failed to retrieve the token from AX",
+  "erp_invalid_resp_err" : "Received an invalid response from the AX service"
+}
