@@ -28,7 +28,6 @@ func NewHttpServer(c Config, h RestHandler, opts ...rest.RunOption) *rest.Server
 	MustSetup(c)
 	srv := rest.MustNewServer(c.Http, opts...)
 	srv.Use(middleware.NewRecoveryMiddleware(c.Env).Handle)
-
 	h.Register(srv)
 	return srv
 }
