@@ -2,9 +2,18 @@ package handler
 
 import (
 	"fmt"
+	"io"
 	"net/http"
+	"tronglv_upload_svc/helper/errors"
+	"tronglv_upload_svc/helper/s3"
 	"tronglv_upload_svc/helper/server/http/response"
+	"tronglv_upload_svc/helper/util"
 	"tronglv_upload_svc/internal/registry"
+	"tronglv_upload_svc/internal/service"
+	"tronglv_upload_svc/internal/types/request"
+
+	"github.com/zeromicro/go-zero/core/logx"
+	"github.com/zeromicro/go-zero/core/stringx"
 )
 
 type UploadHandler interface {
@@ -12,7 +21,8 @@ type UploadHandler interface {
 }
 
 type uploadHandler struct {
-	reg *registry.ServiceContext
+	reg       *registry.ServiceContext
+	uploadSvc service.UploadService
 }
 
 func NewUploadHandler(reg *registry.ServiceContext) UploadHandler {
@@ -23,27 +33,51 @@ func NewUploadHandler(reg *registry.ServiceContext) UploadHandler {
 
 func (p *uploadHandler) UploadFileS3() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		ctx := r.Context()
-		// response.Error(r.Context(), w, err)
-		// var data []string
-		err := r.ParseMultipartForm(10 << 20) // 10 MB limit
+		fu := s3.NewFileUpload(r)
+		files, err := fu.Parse("images[]")
 		if err != nil {
-			response.Error(ctx, w, err)
+			response.Error(r.Context(), w, errors.BadRequest(err))
 			return
 		}
 
-		file, handler, err := r.FormFile("file")
-		if err != nil {
-			response.Error(ctx, w, err)
+		var items []*request.FileInfo
+		for _, val := range files {
+			f, err := val.Open()
+			if err != nil {
+				logx.Error(err)
+				continue
+			}
+
+			fb, e := io.ReadAll(f)
+			if e != nil {
+				_ = f.Close()
+				continue
+			}
+			_ = f.Close()
+
+			items = append(items, &request.FileInfo{
+				FileName: fmt.Sprintf("%s-%s", stringx.Randn(12), val.Filename),
+				FileData: fb,
+				FileSize: val.Size,
+			})
+		}
+
+		if len(items) == 0 {
+			response.Error(r.Context(), w, errors.BadRequest(fmt.Errorf("missing images")))
 			return
 		}
-		defer file.Close()
 
-		fmt.Printf("Uploaded File: %+v\n", handler.Filename)
-		fmt.Printf("File Size: %+v\n", handler.Size)
-		fmt.Printf("MIME Header: %+v\n", handler.Header)
+		resp, err := p.uploadSvc.UploadS3(r.Context(), &request.UploadAttachmentRequest{
+			ServiceName: r.FormValue("service_name"),
+			Acl:         util.String("public-read"),
+			Attachments: items,
+		})
+		if err != nil {
+			response.Error(r.Context(), w, err)
+			return
+		}
 
-		response.OkJson(r.Context(), w, "Upload Success", nil)
+		response.OkJson(r.Context(), w, resp, nil)
 
 	}
 }

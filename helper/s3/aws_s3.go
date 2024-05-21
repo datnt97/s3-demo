@@ -19,7 +19,7 @@ type awsS3Storage struct {
 }
 
 // NewS3Config creates a new instance of S3Config
-func New(cfg BucketS3Config, ctx context.Context) S3Storage {
+func NewS3Storage(cfg BucketS3Config) S3Storage {
 	s := &awsS3Storage{
 		cfg: cfg,
 	}
@@ -82,4 +82,24 @@ func (s *awsS3Storage) Upload(ctx context.Context, fileName string, fileData io.
 	return result, nil
 }
 func (s *awsS3Storage) SignedUrl(ctx context.Context, objectUrl string, expiration time.Duration) (*string, error) {
+	storageClient, err := s.getStorageClient()
+	if err != nil {
+		return nil, err
+	}
+
+	presignClient := s3.NewPresignClient(storageClient)
+	resp, err := presignClient.PresignGetObject(
+		ctx,
+		&s3.GetObjectInput{
+			Bucket: aws.String(s.cfg.BucketName),
+			Key:    aws.String(objectUrl),
+		},
+		func(opts *s3.PresignOptions) {
+			opts.Expires = expiration
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	return aws.String(resp.URL), nil
 }
