@@ -9,9 +9,11 @@ server:
       shedding: true
       log: true
 
-  aws-s3:
-    bucket-region: ${AWS_BUCKET_REGION}
-    bucket-name: ${AWS_BUCKET_NAME}
-    bucket-access-key: ${AWS_BUCKET_ACCESS_KEY}
-    bucket-secret-key: ${AWS_BUCKET_SECRET_KEY}
-    
+aws-s3:
+  bucket-region: ${AWS_BUCKET_REGION}
+  bucket-name: ${AWS_BUCKET_NAME}
+  bucket-access-key: ${AWS_BUCKET_ACCESS_KEY}
+  bucket-secret-key: ${AWS_BUCKET_SECRET_KEY}
+  cdn-url: "${AWS_BUCKET_CDN_URL}"
+  allow-exts:
+    - "*"

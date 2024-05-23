@@ -11,7 +11,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 )
 
 type awsS3Storage struct {
@@ -26,6 +25,9 @@ func NewS3Storage(cfg BucketS3Config) S3Storage {
 	return s
 }
 func (s *awsS3Storage) loadConfig() (*aws.Config, error) {
+
+	fmt.Println("s.cfg ", s.cfg)
+
 	result, err := config.LoadDefaultConfig(context.TODO(),
 		config.WithCredentialsProvider(
 			credentials.NewStaticCredentialsProvider(s.cfg.AccessKey, s.cfg.SecretKey, ""),
@@ -51,10 +53,10 @@ func (s *awsS3Storage) getStorageClient() (*s3.Client, error) {
 }
 
 func (s *awsS3Storage) fileUrl(acl *string, file string) string {
-	if acl != nil && types.ObjectCannedACL(*acl) == types.ObjectCannedACLPublicRead {
-		return fmt.Sprintf("%s/%s", s.cfg.CDNUrl, file)
-	}
-	return fmt.Sprintf("https://%s.%s.s3.amazonaws.com/%s", s.cfg.BucketName, s.cfg.Region, file)
+	// if acl != nil && types.ObjectCannedACL(*acl) == types.ObjectCannedACLPublicRead {
+	// 	return fmt.Sprintf("%s/%s", s.cfg.CDNUrl, file)
+	// }
+	return fmt.Sprintf("https://%s.s3.%s.amazonaws.com/%s", s.cfg.BucketName, s.cfg.Region, file)
 }
 
 func (s *awsS3Storage) Upload(ctx context.Context, fileName string, fileData io.ReadSeeker, acl *string) (*S3UploadResponse, error) {

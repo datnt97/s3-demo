@@ -27,7 +27,8 @@ type uploadHandler struct {
 
 func NewUploadHandler(reg *registry.ServiceContext) UploadHandler {
 	return &uploadHandler{
-		reg: reg,
+		reg:       reg,
+		uploadSvc: service.NewUploadService(reg),
 	}
 }
 
@@ -73,6 +74,7 @@ func (p *uploadHandler) UploadFileS3() http.HandlerFunc {
 			Attachments: items,
 		})
 		if err != nil {
+
 			response.Error(r.Context(), w, err)
 			return
 		}
