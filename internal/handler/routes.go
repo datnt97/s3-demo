@@ -27,7 +27,11 @@ func (h RestHandler) Register(svr *rest.Server) {
 }
 func registerUploadHandler(svr *rest.Server, svc *registry.ServiceContext) {
 	h := NewUploadHandler(svc)
-	var path = "/uploadS3"
+
+	var (
+		path            = "/upload"
+		pathWithPresign = path + "/presign"
+	)
 	svr.AddRoutes(
 		rest.WithMiddlewares(
 			[]rest.Middleware{},
@@ -36,6 +40,11 @@ func registerUploadHandler(svr *rest.Server, svc *registry.ServiceContext) {
 					Method:  http.MethodPost,
 					Path:    path,
 					Handler: h.UploadFileS3(),
+				},
+				{
+					Method:  http.MethodPost,
+					Path:    pathWithPresign,
+					Handler: h.UploadFileS3Presign(),
 				},
 			}...,
 		),

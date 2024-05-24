@@ -18,6 +18,6 @@ type UploadAttachmentRequest struct {
 }
 
 type PreSignedUrlsRequest struct {
-	Urls     []string       `json:"urls,omitempty"`
-	Duration *time.Duration `json:"duration,omitempty"`
+	Urls     []string      `json:"urls,omitempty"`
+	Duration time.Duration `json:"duration,omitempty"`
 }
