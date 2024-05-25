@@ -4,13 +4,20 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log"
 	"path"
 	"time"
+	"tronglv_upload_svc/helper/util"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/aws/aws-sdk-go-v2/feature/cloudfront/sign"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+)
+
+const (
+	privateKeyName = "private_key.pem"
 )
 
 type awsS3Storage struct {
@@ -57,7 +64,7 @@ func (s *awsS3Storage) fileUrl(isCND *bool, file string) string {
 	return fmt.Sprintf("https://%s.s3.%s.amazonaws.com/%s", s.cfg.BucketName, s.cfg.Region, file)
 }
 
-func (s *awsS3Storage) Upload(ctx context.Context, fileName string, fileData io.ReadSeeker, isCND *bool) (*S3UploadResponse, error) {
+func (s *awsS3Storage) Upload(ctx context.Context, fileName string, fileData io.ReadSeeker, isCND bool) (*S3UploadResponse, error) {
 	storageClient, err := s.getStorageClient()
 	if err != nil {
 		return nil, err
@@ -75,7 +82,7 @@ func (s *awsS3Storage) Upload(ctx context.Context, fileName string, fileData io.
 	}
 
 	result := &S3UploadResponse{
-		FileUrl:  s.fileUrl(isCND, s.getObjectKey(fileName)),
+		FileUrl:  s.fileUrl(util.Bool(isCND), s.getObjectKey(fileName)),
 		FileName: s.getObjectKey(fileName),
 		FileExt:  path.Ext(fileName),
 	}
@@ -102,4 +109,22 @@ func (s *awsS3Storage) SignedUrl(ctx context.Context, objectUrl string, expirati
 		return nil, err
 	}
 	return aws.String(resp.URL), nil
+}
+
+func (s *awsS3Storage) CloundFrontSignUrl(ctx context.Context, rawURL string, expiration time.Duration) (*string, error) {
+	privKey, err := util.ReadPrivateKeyFromFile(privateKeyName)
+	if err != nil {
+		log.Fatalf("Failed to parse private key, err: %s\n", err.Error())
+		return nil, err
+	}
+
+	signer := sign.NewURLSigner(s.cfg.PublicID, privKey)
+
+	fmt.Println("rawURL: ", rawURL)
+	signedURL, err := signer.Sign(rawURL, time.Now().Add(expiration))
+	if err != nil {
+		log.Fatalf("Failed to sign url, err: %s\n", err.Error())
+		return nil, err
+	}
+	return aws.String(signedURL), nil
 }

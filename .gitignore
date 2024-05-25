@@ -10,3 +10,4 @@ docker/local.Dockerfile
 uploads/*
 tmp
 .env
+keys

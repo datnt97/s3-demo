@@ -3,9 +3,10 @@ module tronglv_upload_svc
 go 1.21.5
 
 require (
-	github.com/aws/aws-sdk-go v1.53.5
+	github.com/aws/aws-sdk-go-v2 v1.27.0
 	github.com/aws/aws-sdk-go-v2/config v1.27.15
 	github.com/aws/aws-sdk-go-v2/credentials v1.17.15
+	github.com/aws/aws-sdk-go-v2/feature/cloudfront/sign v1.7.5
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.54.2
 	github.com/go-openapi/runtime v0.28.0
 	github.com/golang-jwt/jwt v3.2.2+incompatible
@@ -19,7 +20,6 @@ require (
 
 require (
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 // indirect
-	github.com/aws/aws-sdk-go-v2 v1.27.0 // indirect
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.6.2 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.16.3 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/configsources v1.3.7 // indirect

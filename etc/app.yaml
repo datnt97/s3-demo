@@ -15,5 +15,7 @@ aws-s3:
   bucket-access-key: ${AWS_BUCKET_ACCESS_KEY}
   bucket-secret-key: ${AWS_BUCKET_SECRET_KEY}
   cdn-url: "${AWS_BUCKET_CDN_URL}"
+  public-id: "${AWS_BUCKET_PUBLIC_ID}"
+  private-key: "${AWS_BUCKET_PRIVATE_KEY}"
   allow-exts:
     - "*"

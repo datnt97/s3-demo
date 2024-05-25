@@ -7,4 +7,6 @@ type BucketS3Config struct {
 	AccessKey  string `json:"bucket-access-key"`
 	SecretKey  string `json:"bucket-secret-key"`
 	CDNUrl     string `json:"cdn-url"`
+	PublicID   string `json:"public-id"`
+	PrivateKey string `json:"private-key"`
 }
