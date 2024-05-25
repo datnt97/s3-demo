@@ -15,6 +15,7 @@ type UploadAttachmentRequest struct {
 	IsOverride  *bool          `json:"is_override,omitempty"`
 	IsPresigned *bool          `json:"is_presigned,omitempty"`
 	Duration    *time.Duration `json:"duration,omitempty"`
+	IsCDN       *bool          `json:"is_cdn,omitempty"`
 }
 
 type PreSignedUrlsRequest struct {

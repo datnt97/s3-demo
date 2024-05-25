@@ -20,6 +20,7 @@ import (
 type UploadHandler interface {
 	UploadFileS3() http.HandlerFunc
 	UploadFileS3Presign() http.HandlerFunc
+	UploadFileS3CDN() http.HandlerFunc
 }
 
 type uploadHandler struct {
@@ -109,6 +110,32 @@ func (p *uploadHandler) UploadFileS3Presign() http.HandlerFunc {
 			Attachments: items,
 			IsPresigned: util.Bool(true),
 			Duration:    util.Duration(1 * time.Minute),
+		})
+		if err != nil {
+
+			response.Error(r.Context(), w, err)
+			return
+		}
+
+		response.OkJson(r.Context(), w, resp, nil)
+
+	}
+}
+
+func (p *uploadHandler) UploadFileS3CDN() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		items, err := p.parseFileUpload(r)
+		if err != nil {
+			response.Error(r.Context(), w, errors.BadRequest(err))
+			return
+		}
+
+		resp, err := p.uploadSvc.UploadS3(r.Context(), &request.UploadAttachmentRequest{
+			ServiceName: r.FormValue("service_name"),
+			Acl:         util.String("public-read"),
+			Attachments: items,
+			Duration:    util.Duration(1 * time.Minute),
+			IsCDN:       util.Bool(true),
 		})
 		if err != nil {
 

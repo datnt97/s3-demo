@@ -26,8 +26,6 @@ func NewS3Storage(cfg BucketS3Config) S3Storage {
 }
 func (s *awsS3Storage) loadConfig() (*aws.Config, error) {
 
-	fmt.Println("s.cfg ", s.cfg)
-
 	result, err := config.LoadDefaultConfig(context.TODO(),
 		config.WithCredentialsProvider(
 			credentials.NewStaticCredentialsProvider(s.cfg.AccessKey, s.cfg.SecretKey, ""),
@@ -52,14 +50,14 @@ func (s *awsS3Storage) getStorageClient() (*s3.Client, error) {
 	return s3.NewFromConfig(*cfg), nil
 }
 
-func (s *awsS3Storage) fileUrl(acl *string, file string) string {
-	// if acl != nil && types.ObjectCannedACL(*acl) == types.ObjectCannedACLPublicRead {
-	// 	return fmt.Sprintf("%s/%s", s.cfg.CDNUrl, file)
-	// }
+func (s *awsS3Storage) fileUrl(isCND *bool, file string) string {
+	if isCND != nil && *isCND && len(s.cfg.CDNUrl) > 0 {
+		return fmt.Sprintf("%s/%s", s.cfg.CDNUrl, file)
+	}
 	return fmt.Sprintf("https://%s.s3.%s.amazonaws.com/%s", s.cfg.BucketName, s.cfg.Region, file)
 }
 
-func (s *awsS3Storage) Upload(ctx context.Context, fileName string, fileData io.ReadSeeker, acl *string) (*S3UploadResponse, error) {
+func (s *awsS3Storage) Upload(ctx context.Context, fileName string, fileData io.ReadSeeker, isCND *bool) (*S3UploadResponse, error) {
 	storageClient, err := s.getStorageClient()
 	if err != nil {
 		return nil, err
@@ -77,7 +75,7 @@ func (s *awsS3Storage) Upload(ctx context.Context, fileName string, fileData io.
 	}
 
 	result := &S3UploadResponse{
-		FileUrl:  s.fileUrl(acl, s.getObjectKey(fileName)),
+		FileUrl:  s.fileUrl(isCND, s.getObjectKey(fileName)),
 		FileName: s.getObjectKey(fileName),
 		FileExt:  path.Ext(fileName),
 	}

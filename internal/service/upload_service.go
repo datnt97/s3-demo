@@ -35,7 +35,7 @@ func (s *uploadSvcImpl) UploadS3(ctx context.Context, req *request.UploadAttachm
 
 	for _, file := range req.Attachments {
 		fileName := fmt.Sprintf("%s/%s", util.Slug(req.ServiceName), file.FileName)
-		resp, err := s.uploadStorage.Upload(ctx, fileName, bytes.NewReader(file.FileData), req.Acl)
+		resp, err := s.uploadStorage.Upload(ctx, fileName, bytes.NewReader(file.FileData), req.IsCDN)
 		if err != nil {
 			return nil, err
 		}
